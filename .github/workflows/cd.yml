@@ -13,11 +13,10 @@ jobs:
       packages: write
 
     steps:
-- name: Checkout repository
-  uses: actions/checkout@v4
-  with:
-    submodules: true
-
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -33,5 +32,5 @@ jobs:
           file: backend/Dockerfile
           push: true
           tags: |
-               ghcr.io/fidan200508/monitoringsystem-backend:latest
-               ghcr.io/fidan200508/monitoringsystem-backend:${{ github.sha }}
+            ghcr.io/fidan200508/monitoringsystem-backend:latest
+            ghcr.io/fidan200508/monitoringsystem-backend:${{ github.sha }}
