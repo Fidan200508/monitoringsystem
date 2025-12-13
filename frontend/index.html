@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Farm Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>🌱 Smart Farm Müşahidə Paneli</h1>
+    </header>
+
+    <div class="container">
+        <section id="dashboard-cards" class="cards-section">
+            <div class="card total">
+                <h3>Ümumi Bitki Lotları</h3>
+                <p id="total-lots">0</p>
+            </div>
+            <div class="card overdue">
+                <h3>Suvarması Gecikmiş</h3>
+                <p id="overdue-lots">0</p>
+            </div>
+            <div class="card problem">
+                <h3>Aktiv Problemli</h3>
+                <p id="problem-lots">0</p>
+            </div>
+        </section>
+
+        <section id="plant-list-section">
+            <h2>Bitki Partiyaları Siyahısı</h2>
+            <table id="plant-table">
+                <thead>
+                    <tr>
+                        <th>Sahə / Bitki</th>
+                        <th>Əkin Tarixi</th>
+                        <th>Son Suvarma</th>
+                        <th>Növbəti Plan</th>
+                        <th>Suvarma Vəziyyəti</th>
+                        <th>Aktiv Status</th>
+                        <th>Əməliyyatlar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </section>
+    </div>
+
+    <div id="watering-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Suvarma İcrası</h2>
+            <p>Bitki Lotu: <span id="modal-lot-name"></span></p>
+            <label for="volume">Su Həcmi (L):</label>
+            <input type="number" id="volume" value="100" min="1" required>
+            <button id="execute-watering-btn">İcra Et</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
