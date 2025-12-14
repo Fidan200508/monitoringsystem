@@ -1,32 +1,119 @@
 <!DOCTYPE html>
-<html lang="az">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Bitki Analizi</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>Smart Farm Pro Monitoring</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
 
-<div class="container">
-  <h2>Bitki Aşkarlanması</h2>
+  <aside class="sidebar">
+    <div class="logo">
+      <i class="fas fa-seedling"></i>
+      <h2>Smart Farm Pro</h2>
+    </div>
+    <nav class="nav-menu">
+      <button class="nav-button active" data-page="dashboard"><i class="fas fa-home"></i> Dashboard</button>
+      <button class="nav-button" data-page="fields"><i class="fas fa-leaf"></i> Fields</button>
+      <button class="nav-button" data-page="fieldSummary"><i class="fas fa-map-marked-alt"></i> Field Summary</button>
+      <button class="nav-button" data-page="import"><i class="fas fa-file-import"></i> Import Data</button>
+    </nav>
+  </aside>
 
-  <input type="file" id="imageInput">
-  <button onclick="analyze()">Analiz et</button>
+  <main class="content">
 
-  <div id="result" class="hidden">
-    <p><b>Sağlamlıq:</b> <span id="status"></span></p>
+    <section id="dashboard" class="page active">
+      <h1><i class="fas fa-chart-line"></i> Farm Overview</h1>
 
-    <label>Ümumi sağlamlıq</label>
-    <progress id="overall" max="100"></progress>
+      <div class="cards">
+        <div class="card stat-total">
+          <div class="card-icon"><i class="fas fa-globe-americas"></i></div>
+          <h3 class="card-title">Total Plants</h3>
+          <p id="totalPlants" class="card-value">0</p>
+        </div>
+        <div class="card stat-water">
+          <div class="card-icon"><i class="fas fa-tint"></i></div>
+          <h3 class="card-title">Urgent Watering</h3>
+          <p id="overduePlants" class="card-value">0</p>
+        </div>
+        <div class="card stat-problem">
+          <div class="card-icon"><i class="fas fa-exclamation-triangle"></i></div>
+          <h3 class="card-title">Problem Alerts</h3>
+          <p id="problemPlants" class="card-value">0</p>
+        </div>
+      </div>
+      <button class="auto-water-button" onclick="farmApp.autoWaterOverdue()"><i class="fas fa-spray-can"></i> Auto-Water Overdue Plants</button>
+      <div id="autoWaterResult" class="auto-water-result"></div>
 
-    <label>Nəmlik</label>
-    <progress id="moisture" max="100"></progress>
+    </section>
 
-    <label>Fiziki rəng</label>
-    <progress id="color" max="100"></progress>
+    <section id="fields" class="page">
+      <h1><i class="fas fa-tractor"></i> Field Management</h1>
+
+      <div class="form-container">
+        <h3>Register New Plant</h3>
+        <div class="form add-plant-form">
+          <input id="fieldName" placeholder="Field Name (e.g., North 1)" />
+          <input id="plantName" placeholder="Plant Type (e.g., Tomato)" />
+          <select id="waterCycleDays">
+            <option value="1">Water Every 1 Day</option>
+            <option value="2">Water Every 2 Days</option>
+            <option value="3" selected>Water Every 3 Days</option>
+            <option value="5">Water Every 5 Days</option>
+            <option value="7">Water Every 7 Days</option>
+          </select>
+          <button onclick="farmApp.addPlant()"><i class="fas fa-plus"></i> Add Plant</button>
+        </div>
+      </div>
+
+      <div class="list-controls">
+        <input type="text" id="searchPlants" placeholder="Search by Field or Type..." onkeyup="farmApp.renderPlants()">
+        <select id="sortPlants" onchange="farmApp.renderPlants()">
+          <option value="lastWatered_asc">Oldest Watered</option>
+          <option value="plant_asc">Plant Type (A-Z)</option>
+          <option value="field_asc">Field Name (A-Z)</option>
+          <option value="status_desc">Status (Problems First)</option>
+        </select>
+      </div>
+
+      <ul id="plantList" class="list"></ul>
+    </section>
+    
+    <section id="fieldSummary" class="page">
+        <h1><i class="fas fa-map-marked-alt"></i> Field-Level Summary</h1>
+        <div id="fieldSummaryContent">
+            </div>
+    </section>
+
+    <section id="import" class="page">
+      <h1><i class="fas fa-upload"></i> Import Daily JSON</h1>
+      <p class="import-note">Paste an array of daily events. Example format: <code>[{ "field": "North 1", "plantType": "Corn", "event": "water", "date": "2025-12-10" }]</code></p>
+      
+      <div class="import-area">
+        <textarea id="jsonInput" placeholder="Paste JSON array here..."></textarea>
+        <button onclick="farmApp.importJSON()"><i class="fas fa-cloud-upload-alt"></i> Process Import</button>
+      </div>
+
+      <pre id="importResult"></pre>
+    </section>
+
+  </main>
+
+  <div id="plantDetailModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="farmApp.closeModal()">&times;</span>
+        <h2>Plant Details & Configuration</h2>
+        <div id="modalBody">
+            </div>
+        <div id="historyLog">
+            <h3>Event History</h3>
+            <ul id="historyList"></ul>
+        </div>
+    </div>
   </div>
-</div>
 
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>

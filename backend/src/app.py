@@ -1,101 +1,58 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from ultralytics import YOLO
+from src.database import insert_sensor_data
 import shutil
 import os
+import uuid
 
-# --------------------------------------------------
-# App init
-# --------------------------------------------------
-app = FastAPI(
-    title="YOLO Plant Health Analysis API",
-    description="Demo-safe YOLO based plant health analysis",
-    version="3.1.0"
-)
+app = FastAPI(title="Monitoring System API")
 
+# 🔹 Allow frontend (important for Render + frontend)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # later you can restrict
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# --------------------------------------------------
-# Paths
-# --------------------------------------------------
-UPLOAD_DIR = "uploads"
+# 🔹 Upload directory (Render-safe)
+UPLOAD_DIR = os.path.join(os.getcwd(), "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# --------------------------------------------------
-# Load YOLO model (object detector)
-# --------------------------------------------------
-model = YOLO("yolov8n.pt")
-
-# --------------------------------------------------
-# Analyze endpoint
-# --------------------------------------------------
-@app.post("/analyze")
-async def analyze(file: UploadFile = File(...)):
-    if not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="Only image files allowed")
-
-    image_path = os.path.join(UPLOAD_DIR, file.filename)
-
-    with open(image_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-
-    # YOLO inference
-    results = model(image_path)[0]
-
-    detections = []
-
-    for box in results.boxes:
-        conf = float(box.conf[0])
-        cls_id = int(box.cls[0])
-        label = model.names[cls_id]
-
-        # --------------------------------------------
-        # IMPORTANT FILTER (prevents false positives)
-        # --------------------------------------------
-        if conf < 0.85:
-            continue
-
-        # Ignore generic food/object detections
-        if label in ["apple", "banana", "orange", "person"]:
-            continue
-
-        x1, y1, x2, y2 = map(int, box.xyxy[0])
-
-        detections.append({
-            "label": label,
-            "confidence": round(conf, 2),
-            "box": [x1, y1, x2, y2]
-        })
-
-    # --------------------------------------------------
-    # Health decision (SAFE DEMO LOGIC)
-    # --------------------------------------------------
-    if len(detections) == 0:
-        health_status = "Sağlam"
-        overall_health = 100
-    else:
-        health_status = "Risk altındadır"
-        overall_health = max(40, 100 - len(detections) * 20)
-
-    return {
-        "health_status": health_status,
-        "overall_health": overall_health,
-        "detections": detections,
-        "note": "YOLO object model used. Disease model not trained yet."
-    }
-
-# --------------------------------------------------
-# Root
-# --------------------------------------------------
+# 🔹 Health check endpoint (Render loves this)
 @app.get("/")
 def root():
-    return {
-        "message": "YOLO Plant Health API running ✅",
-        "status": "Demo-safe mode",
-        "next_step": "Train YOLO with plant disease dataset"
+    return {"status": "Backend is running 🚀"}
+
+# 🔹 Image analysis endpoint
+@app.post("/analyze")
+async def analyze_image(file: UploadFile = File(...)):
+    # 🔹 Make filename unique (important!)
+    ext = file.filename.split(".")[-1]
+    unique_name = f"{uuid.uuid4()}.{ext}"
+    file_path = os.path.join(UPLOAD_DIR, unique_name)
+
+    # 🔹 Save image
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    # 🔹 AI logic (placeholder – later YOLO / ML model)
+    health_status = "healthy"
+    overall_health = 80
+
+    result = {
+        "file": unique_name,
+        "health_status": health_status,
+        "overall_health": overall_health
     }
+
+    # 🔹 Save result to MongoDB
+    insert_sensor_data({
+        "type": "image_analysis",
+        "file": unique_name,
+        "health_status": health_status,
+        "overall_health": overall_health
+    })
+
+    return result
